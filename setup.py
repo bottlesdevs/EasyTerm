@@ -5,6 +5,10 @@ setup(
     description='An easy-to-bundle GTK terminal emulator',
     author='Mirko brombin',
     author_email='send@mirko.pm',
-    version='0.1',
-    scripts = (['easyterm'])
+    version='0.1.1',
+    packages=['easyterm'],
+    scripts=['easyterm/easyterm.py'],
+    url='https://github.com/bottlesdevs/EasyTerm',
+    license='GPLv3',
+    long_description=open('README.md').read()
 )
