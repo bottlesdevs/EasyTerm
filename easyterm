@@ -26,10 +26,21 @@ class Terminal(Vte.Terminal):
 
 
 class HeaderBar(Handy.HeaderBar):
+    actions_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+
     def __init__(self, *args, **kwds):
         super(HeaderBar, self).__init__(*args, **kwds)
         self.set_show_close_button(True)
         self.set_title(CONF_NAME)
+        self.pack_start(self.actions_box)
+    
+    def build_actions(self, actions:dict):
+        for action in actions:
+            button = Gtk.Button()
+            button.set_tooltip_text(action["tooltip"])
+            button.set_image(Gtk.Image.new_from_icon_name(action["icon"], Gtk.IconSize.BUTTON))
+            button.connect("clicked", action["callback"])
+            self.actions_box.pack_start(button, False, False, 0)
 
 
 class MainWindow(Handy.ApplicationWindow):
@@ -38,7 +49,7 @@ class MainWindow(Handy.ApplicationWindow):
     headerbar = HeaderBar()
     terminal = Terminal()
 
-    def __init__(self, cwd:str="", command:list=[], env:list=[], *args, **kwds):
+    def __init__(self, cwd:str="", command:list=[], env:list=[], actions:list=[], *args, **kwds):
         super().__init__()
         self.set_title(CONF_NAME)
         self.set_default_size(800, 450)
@@ -47,6 +58,9 @@ class MainWindow(Handy.ApplicationWindow):
         self.add(self.box)
         self.box.pack_start(self.headerbar, False, False, 0)
         self.box.pack_start(self.terminal, True, True, 0)
+        
+        if actions:
+            self.headerbar.build_actions(actions)
         
         if cwd == "":
             cwd = CONF_DEF_CWD
