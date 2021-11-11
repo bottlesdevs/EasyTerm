@@ -6,7 +6,7 @@ gi.require_version('Handy', '1')
 gi.require_version('Vte', '2.91')
 from gi.repository import Gtk, Gdk, GLib, Vte, Handy, Pango
 
-CONF_NAME = "EasyTerminal"
+CONF_NAME = "EasyTerm"
 CONF_DEF_CWD = os.getcwd()
 CONF_DEF_CMD = ["/bin/bash"]
 CONF_FONT = "Source Code Pro Regular 12"
@@ -76,7 +76,7 @@ class MainWindow(Handy.ApplicationWindow):
         settings.set_property("gtk-application-prefer-dark-theme", True)
         
 
-class EasyTerminal(Gtk.Application):
+class EasyTerm(Gtk.Application):
     def __init__(self, cwd:str="", command:list=[], env:list=[], *args, **kwds):
         super().__init__(*args, **kwds)
         self.cwd = cwd
@@ -98,5 +98,5 @@ class EasyTerminal(Gtk.Application):
 
 
 if __name__ == "__main__":
-    app = EasyTerminal()
+    app = EasyTerm()
     app.run(None)

@@ -28,7 +28,7 @@ python3 setup.py install
 As a **library**, you can use the `EasyTerm` class as follows:
 ```python
 import easyterm
-easyterm.EasyTerminal(
+easyterm.EasyTerm(
     cwd='/path',
     command='/bin/bash',
     env=[]
