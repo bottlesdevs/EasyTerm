@@ -35,6 +35,14 @@ import easyterm
 easyterm.EasyTerm(
     cwd='/path',
     command='/bin/bash',
-    env=[]
+    env=[],
+    actions=[
+        {
+            "name": "Hello",
+            "icon": "emblem-favorite",
+            "tooltip": "Say hello to the world",
+            "command": "echo Hello World"
+        }
+    ]
 )
 ```
