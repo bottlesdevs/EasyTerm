@@ -17,6 +17,10 @@ Port to GTK4 is almost simple, but is stalled because of the lack of
 Vte for GTK4. This mean that also libhandy cannot be moved to libadwaita
 because this last one need GTK4.
 
+## Bottles purposes
+EasyTerm should be provided as the default terminal in the Bottles project
+when Vte will be ported to GTK4.
+
 ## Installation
 ```bash
 git clone https://github.com/bottlesdevs/EasyTerm.git
