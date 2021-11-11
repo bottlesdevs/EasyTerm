@@ -91,17 +91,19 @@ class MainWindow(Handy.ApplicationWindow):
         
 
 class EasyTerm(Gtk.Application):
-    def __init__(self, cwd:str="", command:list=[], env:list=[], *args, **kwds):
+    def __init__(self, cwd:str="", command:list=[], env:list=[], actions:list=[], *args, **kwds):
         super().__init__(*args, **kwds)
         self.cwd = cwd
         self.command = command
         self.env = env
+        self.actions = actions
             
     def do_activate(self):
         win = MainWindow(
             cwd=self.cwd,
             command=self.command,
-            env=self.env
+            env=self.env,
+            actions=self.actions
         )
         win.connect('delete-event', Gtk.main_quit)
         win.show_all()
