@@ -23,31 +23,39 @@ class Terminal(Vte.Terminal):
             foreground=CONF_FG,
             background=CONF_BG,
         )
+    
+    def run_command(self, cmd):
+        _cmd = str.encode(f"{cmd}\n")
+        self.feed_child(_cmd)
+    
+    def run_command_btn(self, btn, cmd):
+        self.run_command(cmd)
 
 
 class HeaderBar(Handy.HeaderBar):
     actions_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
 
-    def __init__(self, *args, **kwds):
+    def __init__(self, terminal, *args, **kwds):
         super(HeaderBar, self).__init__(*args, **kwds)
         self.set_show_close_button(True)
         self.set_title(CONF_NAME)
         self.pack_start(self.actions_box)
+        self.terminal = terminal
     
     def build_actions(self, actions:dict):
         for action in actions:
             button = Gtk.Button()
             button.set_tooltip_text(action["tooltip"])
             button.set_image(Gtk.Image.new_from_icon_name(action["icon"], Gtk.IconSize.BUTTON))
-            button.connect("clicked", action["callback"])
+            button.connect("clicked", self.terminal.run_command_btn, action["command"])
             self.actions_box.pack_start(button, False, False, 0)
 
 
 class MainWindow(Handy.ApplicationWindow):
     Handy.init()
     box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-    headerbar = HeaderBar()
     terminal = Terminal()
+    headerbar = HeaderBar(terminal)
 
     def __init__(self, cwd:str="", command:list=[], env:list=[], actions:list=[], *args, **kwds):
         super().__init__()
