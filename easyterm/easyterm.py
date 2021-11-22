@@ -98,6 +98,13 @@ class MainWindow(Handy.ApplicationWindow):
         settings.set_property("gtk-application-prefer-dark-theme", True)
         
 
+class EasyTermLib:
+    def __init__(self, cwd:str="", command:list=[], env:list=[], actions:list=[], *args, **kwds):
+        self.window = MainWindow(cwd, command, env, actions)
+        self.window.show_all()
+        self.window.connect("delete-event", Gtk.main_quit)
+        Gtk.main()
+
 class EasyTerm(Gtk.Application):
     def __init__(self, cwd:str="", command:list=[], env:list=[], actions:list=[], *args, **kwds):
         super().__init__(*args, **kwds)
