@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 import os
 import gi
+import sys
 gi.require_version('Gtk', '3.0')
 gi.require_version('Handy', '1')
 gi.require_version('Vte', '2.91')
-from gi.repository import Gtk, Gdk, GLib, Vte, Handy, Pango
+from gi.repository import Gtk, Gdk, Gio, GLib, Vte, Handy, Pango
 
 CONF_NAME = "EasyTerm"
 CONF_DEF_CWD = os.getcwd()
@@ -107,11 +108,72 @@ class EasyTermLib:
 
 class EasyTerm(Gtk.Application):
     def __init__(self, cwd:str="", command:list=[], env:list=[], actions:list=[], *args, **kwds):
-        super().__init__(*args, **kwds)
+        super().__init__(
+            application_id='com.usebottles.easyterm',
+            flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
+            *args, **kwds
+        )
         self.cwd = cwd
         self.command = command
         self.env = env
         self.actions = actions
+
+        self.__register_arguments()
+    
+    def __register_arguments(self):
+        self.add_main_option(
+            "cwd",
+            ord("c"),
+            GLib.OptionFlags.NONE,
+            GLib.OptionArg.STRING,
+            "Set the initial working directory",
+            None
+        )
+        self.add_main_option(
+            "command",
+            ord("c"),
+            GLib.OptionFlags.NONE,
+            GLib.OptionArg.STRING,
+            "Set the command to execute",
+            None
+        )
+        self.add_main_option(
+            "env",
+            ord("e"),
+            GLib.OptionFlags.NONE,
+            GLib.OptionArg.STRING,
+            "Set the environment variables",
+            None
+        )
+        self.add_main_option(
+            "actions",
+            ord("a"),
+            GLib.OptionFlags.NONE,
+            GLib.OptionArg.STRING,
+            "Set the actions",
+            None
+        )
+
+    
+    def do_command_line(self, command_line):
+        cwd = ""
+        command = []
+        env = []
+        actions = []
+
+        options = command_line.get_options_dict()
+        
+        if options.contains("cwd"):
+            cwd = options.lookup_value("cwd").get_string()
+        if options.contains("command"):
+            command = options.lookup_value("command").get_string().split(" ")
+        if options.contains("env"):
+            env = options.lookup_value("env").get_string().split(" ")
+        if options.contains("actions"):
+            actions = options.lookup_value("actions").get_string().split(" ")
+
+        EasyTermLib(cwd, command, env, actions)
+        return 0
             
     def do_activate(self):
         win = MainWindow(
@@ -121,8 +183,7 @@ class EasyTerm(Gtk.Application):
             actions=self.actions
         )
         win.connect('delete-event', Gtk.main_quit)
-        win.show_all()
-        Gtk.main()
+        win.present()
     
     def do_startup(self):
         Gtk.Application.do_startup(self)
@@ -130,4 +191,4 @@ class EasyTerm(Gtk.Application):
 
 if __name__ == "__main__":
     app = EasyTerm()
-    app.run(None)
+    app.run(sys.argv)
