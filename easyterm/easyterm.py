@@ -124,7 +124,7 @@ class EasyTerm(Gtk.Application):
     def __register_arguments(self):
         self.add_main_option(
             "cwd",
-            ord("c"),
+            ord("w"),
             GLib.OptionFlags.NONE,
             GLib.OptionArg.STRING,
             "Set the initial working directory",
