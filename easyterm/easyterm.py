@@ -62,7 +62,7 @@ class MainWindow(Handy.ApplicationWindow):
         super().__init__()
         self.set_title(CONF_NAME)
         self.set_default_size(800, 450)
-        self.set_dark_theme()
+        # self.set_dark_theme()
 
         self.add(self.box)
         self.box.pack_start(self.headerbar, False, False, 0)
@@ -105,6 +105,7 @@ class EasyTermLib:
         self.window.show_all()
         self.window.connect("delete-event", Gtk.main_quit)
         Gtk.main()
+        sys.exit()
 
 class EasyTerm(Gtk.Application):
     def __init__(self, cwd:str="", command:list=[], env:list=[], actions:list=[], *args, **kwds):
