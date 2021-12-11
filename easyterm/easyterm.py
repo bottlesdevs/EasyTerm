@@ -47,7 +47,10 @@ class HeaderBar(Handy.HeaderBar):
         for action in actions:
             button = Gtk.Button()
             button.set_tooltip_text(action["tooltip"])
-            button.set_image(Gtk.Image.new_from_icon_name(action["icon"], Gtk.IconSize.BUTTON))
+            button.set_image(
+                Gtk.Image.new_from_icon_name(action["icon"], 
+                Gtk.IconSize.BUTTON)
+            )
             button.connect("clicked", self.terminal.run_command_btn, action["command"])
             self.actions_box.pack_start(button, False, False, 0)
 
@@ -58,11 +61,21 @@ class MainWindow(Handy.ApplicationWindow):
     terminal = Terminal()
     headerbar = HeaderBar(terminal)
 
-    def __init__(self, cwd:str="", command:list=[], env:list=[], actions:list=[], *args, **kwds):
+    def __init__(
+        self, 
+        cwd:str="", 
+        command:list=[], 
+        env:list=[], 
+        actions:list=[], 
+        dark_theme:bool=False,
+        *args, **kwds
+    ):
         super().__init__()
         self.set_title(CONF_NAME)
         self.set_default_size(800, 450)
-        # self.set_dark_theme()
+
+        if dark_theme:
+            self.set_dark_theme()
 
         self.add(self.box)
         self.box.pack_start(self.headerbar, False, False, 0)
@@ -100,15 +113,30 @@ class MainWindow(Handy.ApplicationWindow):
         
 
 class EasyTermLib:
-    def __init__(self, cwd:str="", command:list=[], env:list=[], actions:list=[], *args, **kwds):
-        self.window = MainWindow(cwd, command, env, actions)
+    def __init__(
+        self, 
+        cwd:str="", 
+        command:list=[], 
+        env:list=[], 
+        actions:list=[], 
+        dark_theme:bool=False, 
+        *args, **kwds
+    ):
+        self.window = MainWindow(cwd, command, env, actions, dark_theme)
         self.window.show_all()
         self.window.connect("delete-event", Gtk.main_quit)
         Gtk.main()
         sys.exit()
 
 class EasyTerm(Gtk.Application):
-    def __init__(self, cwd:str="", command:list=[], env:list=[], actions:list=[], *args, **kwds):
+    def __init__(
+        self, 
+        cwd:str="", 
+        command:list=[],
+        env:list=[],
+        actions:list=[], 
+        *args, **kwds
+    ):
         super().__init__(
             application_id='com.usebottles.easyterm',
             flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
@@ -154,6 +182,14 @@ class EasyTerm(Gtk.Application):
             "Set the actions",
             None
         )
+        self.add_main_option(
+            "dark-theme",
+            ord("d"),
+            GLib.OptionFlags.NONE,
+            GLib.OptionArg.NONE,
+            "Set the dark theme",
+            False
+        )
 
     
     def do_command_line(self, command_line):
@@ -161,6 +197,7 @@ class EasyTerm(Gtk.Application):
         command = []
         env = []
         actions = []
+        dark_theme = False
 
         options = command_line.get_options_dict()
         
@@ -172,8 +209,10 @@ class EasyTerm(Gtk.Application):
             env = options.lookup_value("env").get_string().split(" ")
         if options.contains("actions"):
             actions = options.lookup_value("actions").get_string().split(" ")
+        if options.lookup_value("dark-theme").get_boolean():
+            dark_theme = True
 
-        EasyTermLib(cwd, command, env, actions)
+        EasyTermLib(cwd, command, env, actions, dark_theme)
         return 0
             
     def do_activate(self):
