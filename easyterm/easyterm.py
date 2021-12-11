@@ -188,7 +188,7 @@ class EasyTerm(Gtk.Application):
             GLib.OptionFlags.NONE,
             GLib.OptionArg.NONE,
             "Set the dark theme",
-            False
+            None
         )
 
     
