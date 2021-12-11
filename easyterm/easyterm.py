@@ -2,6 +2,7 @@
 import os
 import gi
 import sys
+import shlex
 gi.require_version('Gtk', '3.0')
 gi.require_version('Handy', '1')
 gi.require_version('Vte', '2.91')
@@ -204,7 +205,8 @@ class EasyTerm(Gtk.Application):
         if options.contains("cwd"):
             cwd = options.lookup_value("cwd").get_string()
         if options.contains("command"):
-            command = options.lookup_value("command").get_string().split(" ")
+            command = shlex.split(options.lookup_value("command").get_string())
+
         if options.contains("env"):
             env = options.lookup_value("env").get_string().split(" ")
         if options.contains("actions"):
