@@ -149,7 +149,7 @@ class EasyTerm(Gtk.Application):
     ):
         super().__init__(
             application_id='com.usebottles.easyterm',
-            flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
+            flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE | Gio.ApplicationFlags.NON_UNIQUE,
             *args, **kwds
         )
         self.cwd = cwd

@@ -5,7 +5,7 @@ setup(
     description='An easy-to-bundle GTK terminal emulator',
     author='Mirko brombin',
     author_email='send@mirko.pm',
-    version='0.1.7',
+    version='0.1.8',
     packages=['easyterm'],
     scripts=['easyterm/easyterm.py'],
     url='https://github.com/bottlesdevs/EasyTerm',
