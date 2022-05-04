@@ -31,6 +31,36 @@ class Terminal(Vte.Terminal):
                 foreground=palette[0],
                 background=palette[1],
             )
+        
+        # menu
+        self.popup_menu = Gtk.Menu()
+        self.popup_menu.set_halign(Gtk.Align.CENTER)
+
+        # menu item: copy
+        self.copy_item = Gtk.MenuItem.new_with_label("Copy")
+        self.copy_item.connect("activate", self.copy_cb)
+        self.popup_menu.append(self.copy_item)
+
+        # menu item: paste
+        self.paste_item = Gtk.MenuItem.new_with_label("Paste")
+        self.paste_item.connect("activate", self.paste_cb)
+        self.popup_menu.append(self.paste_item)
+        
+        # show menu on right click
+        self.connect("button-press-event", self.show_menu_cb)
+
+    def show_menu_cb(self, widget, event):
+        if event.button == 3:
+            self.popup_menu.show_all()
+            self.popup_menu.popup_at_pointer(event)
+            return True
+        return False
+
+    def copy_cb(self, widget):
+        self.copy_clipboard_format(Vte.Format.TEXT)
+
+    def paste_cb(self, widget):
+        self.paste_clipboard()
     
     def run_command(self, cmd):
         _cmd = str.encode(f"{cmd}\n")
@@ -98,6 +128,7 @@ class MainWindow(Handy.ApplicationWindow):
         if command == []:
             command = CONF_DEF_CMD
 
+        '''
         self.terminal.spawn_sync(
             Vte.PtyFlags.DEFAULT,
             cwd,
@@ -105,6 +136,19 @@ class MainWindow(Handy.ApplicationWindow):
             env,
             GLib.SpawnFlags.DO_NOT_REAP_CHILD,
             None,
+            None,
+            None
+        )
+        '''
+        self.terminal.spawn_async(
+            Vte.PtyFlags.DEFAULT,
+            cwd,
+            command,
+            env,
+            GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+            None,
+            None,
+            -1,
             None,
             None
         )
@@ -222,14 +266,19 @@ class EasyTerm(Gtk.Application):
         
         if options.contains("cwd"):
             cwd = options.lookup_value("cwd").get_string()
+
         if options.contains("command"):
             command = shlex.split(options.lookup_value("command").get_string())
+
         if options.contains("env"):
             env = options.lookup_value("env").get_string().split(" ")
+
         if options.contains("actions"):
             actions = options.lookup_value("actions").get_string().split(" ")
-        if options.lookup_value("dark-theme").get_boolean():
+
+        if options.lookup_value("dark-theme"):
             dark_theme = True
+
         if options.contains("palette"):
             palette = options.lookup_value("palette").get_string().split(" ")
             if len(palette) < 2:
