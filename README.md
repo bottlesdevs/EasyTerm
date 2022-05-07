@@ -1,8 +1,6 @@
 # EasyTerm
 An easy-to-bundle GTK terminal emulator.
 
-> This is a WIP (Work In Progress) project.
-
 This project is meant to be used as a dependency for other projects that
 need an easy-to-bundle and lightweight terminal emulator, but also
 works as a standalone terminal emulator.

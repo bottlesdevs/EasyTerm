@@ -21,6 +21,7 @@ class Terminal(Vte.Terminal):
         self.set_cursor_blink_mode(Vte.CursorBlinkMode.ON)
         self.set_mouse_autohide(True)
         self.set_font(Pango.FontDescription(CONF_FONT))
+        
         if palette is None or len(palette) < 2:
             self.set_colors(
                 foreground=CONF_FG,
