@@ -103,7 +103,7 @@ class MainWindow(Handy.ApplicationWindow):
         command:list=[], 
         env:list=[], 
         actions:list=[], 
-        dark_theme:bool=False,
+        dark_theme:bool=True,
         palette:list=[],
         *args, **kwds
     ):
@@ -173,7 +173,7 @@ class EasyTermLib:
         command:list=[], 
         env:list=[], 
         actions:list=[], 
-        dark_theme:bool=False, 
+        dark_theme:bool=True, 
         palette:list=[],
         *args, **kwds
     ):
@@ -238,11 +238,11 @@ class EasyTerm(Gtk.Application):
             None
         )
         self.add_main_option(
-            "dark-theme",
+            "light-theme",
             ord("d"),
             GLib.OptionFlags.NONE,
             GLib.OptionArg.NONE,
-            "Set the dark theme",
+            "Set the light theme",
             None
         )
         self.add_main_option(
@@ -260,7 +260,7 @@ class EasyTerm(Gtk.Application):
         command = []
         env = []
         actions = []
-        dark_theme = False
+        dark_theme = True
         palette = []
 
         options = command_line.get_options_dict()
@@ -277,8 +277,8 @@ class EasyTerm(Gtk.Application):
         if options.contains("actions"):
             actions = options.lookup_value("actions").get_string().split(" ")
 
-        if options.lookup_value("dark-theme"):
-            dark_theme = True
+        if options.lookup_value("light-theme"):
+            dark_theme = False
 
         if options.contains("palette"):
             palette = options.lookup_value("palette").get_string().split(" ")
