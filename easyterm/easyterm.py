@@ -3,24 +3,30 @@ import os
 import gi
 import sys
 import shlex
-gi.require_version('Gtk', '3.0')
-gi.require_version('Handy', '1')
-gi.require_version('Vte', '2.91')
-from gi.repository import Gtk, Gdk, Gio, GLib, Vte, Handy, Pango
+gi.require_version('Gtk', '4.0')
+gi.require_version('Adw', '1')
+gi.require_version('Vte', '3.91')
+from gi.repository import Gtk, Gdk, Gio, GLib, Vte, Adw, Pango
+
+Adw.init()
 
 CONF_NAME = "EasyTerm"
 CONF_DEF_CWD = os.getcwd()
 CONF_DEF_CMD = ["/bin/bash"]
 CONF_FONT = "Source Code Pro Regular 12"
-CONF_FG = Gdk.RGBA(0.8, 0.8, 0.8, 1.0)
-CONF_BG = Gdk.RGBA(0.1, 0.1, 0.1, 1.0)
+CONF_FG = Gdk.RGBA(); CONF_FG.red = 0.8; CONF_FG.green = 0.8; CONF_FG.blue = 0.8; CONF_FG.alpha = 1.0
+CONF_BG = Gdk.RGBA(); CONF_BG.red = 0.1; CONF_BG.green = 0.1; CONF_BG.blue = 0.1; CONF_BG.alpha = 1.0
 
 class Terminal(Vte.Terminal):
+    evc = Gtk.GestureClick.new()
+    popup_menu = Gtk.PopoverMenu()
+
     def __init__(self, palette=None, *args, **kwds):
         super(Terminal, self).__init__(*args, **kwds)  
         self.set_cursor_blink_mode(Vte.CursorBlinkMode.ON)
         self.set_mouse_autohide(True)
         self.set_font(Pango.FontDescription(CONF_FONT))
+        self.add_controller(self.evc)
         
         if palette is None or len(palette) < 2:
             self.set_colors(
@@ -34,28 +40,16 @@ class Terminal(Vte.Terminal):
             )
         
         # menu
-        self.popup_menu = Gtk.Menu()
-        self.popup_menu.set_halign(Gtk.Align.CENTER)
+        # copy_item = Gtk.MenuItem("Copy")
+        # paste_item = Gtk.MenuItem("Paste")
 
-        # menu item: copy
-        self.copy_item = Gtk.MenuItem.new_with_label("Copy")
-        self.copy_item.connect("activate", self.copy_cb)
-        self.popup_menu.append(self.copy_item)
+        # signals
+        # self.evc.connect("pressed", self.show_menu_cb)
+        # copy_item.connect("activate", self.copy_cb)
+        # paste_item.connect("activate", self.paste_cb)
 
-        # menu item: paste
-        self.paste_item = Gtk.MenuItem.new_with_label("Paste")
-        self.paste_item.connect("activate", self.paste_cb)
-        self.popup_menu.append(self.paste_item)
-        
-        # show menu on right click
-        self.connect("button-press-event", self.show_menu_cb)
-
-    def show_menu_cb(self, widget, event):
-        if event.button == 3:
-            self.popup_menu.show_all()
-            self.popup_menu.popup_at_pointer(event)
-            return True
-        return False
+    def show_menu_cb(self, ctl, n_press, x, y):
+        self.popup_menu.popup()
 
     def copy_cb(self, widget):
         self.copy_clipboard_format(Vte.Format.TEXT)
@@ -71,15 +65,18 @@ class Terminal(Vte.Terminal):
         self.run_command(cmd)
 
 
-class HeaderBar(Handy.HeaderBar):
+class HeaderBar(Adw.HeaderBar):
     actions_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+    label_title = Gtk.Label.new(CONF_NAME)
 
     def __init__(self, terminal, *args, **kwds):
         super(HeaderBar, self).__init__(*args, **kwds)
-        self.set_show_close_button(True)
-        self.set_title(CONF_NAME)
+        self.set_title_widget(self.label_title)
         self.pack_start(self.actions_box)
         self.terminal = terminal
+    
+    def set_title(self, title):
+        self.label_title.set_text(title)
     
     def build_actions(self, actions:dict):
         for action in actions:
@@ -92,11 +89,9 @@ class HeaderBar(Handy.HeaderBar):
             button.connect("clicked", self.terminal.run_command_btn, action["command"])
             self.actions_box.pack_start(button, False, False, 0)
 
-
-class MainWindow(Handy.ApplicationWindow):
-    Handy.init()
+class MainWindow(Adw.ApplicationWindow):
     box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-
+    
     def __init__(
         self, 
         cwd:str="", 
@@ -105,9 +100,9 @@ class MainWindow(Handy.ApplicationWindow):
         actions:list=[], 
         dark_theme:bool=True,
         palette:list=[],
-        *args, **kwds
+        **kwargs
     ):
-        super().__init__()
+        super().__init__(**kwargs)
         self.set_title(CONF_NAME)
         self.set_default_size(800, 450)
 
@@ -117,10 +112,10 @@ class MainWindow(Handy.ApplicationWindow):
         if dark_theme:
             self.set_dark_theme()
 
-        self.add(self.box)
-        self.box.pack_start(self.headerbar, False, False, 0)
-        self.box.pack_start(self.terminal, True, True, 0)
-        
+        self.set_content(self.box)
+        self.box.append(self.headerbar)
+        self.box.append(self.terminal)
+
         if actions:
             self.headerbar.build_actions(actions)
         
@@ -129,18 +124,6 @@ class MainWindow(Handy.ApplicationWindow):
         if command == []:
             command = CONF_DEF_CMD
 
-        '''
-        self.terminal.spawn_sync(
-            Vte.PtyFlags.DEFAULT,
-            cwd,
-            command,
-            env,
-            GLib.SpawnFlags.DO_NOT_REAP_CHILD,
-            None,
-            None,
-            None
-        )
-        '''
         self.terminal.spawn_async(
             Vte.PtyFlags.DEFAULT,
             cwd,
@@ -154,18 +137,17 @@ class MainWindow(Handy.ApplicationWindow):
             None
         )
         
-        self.terminal.connect("key-press-event", self.update_title)
+        # self.terminal.evc.connect("key-pressed", self.update_title)
         self.terminal.connect("window-title-changed", self.update_title)
         self.terminal.connect("child-exited", self.update_title)
-    
+
     def update_title(self, terminal, *args):
         self.headerbar.set_title(terminal.get_window_title())
 
     def set_dark_theme(self):
-        settings = Gtk.Settings.get_default()
-        settings.set_property("gtk-application-prefer-dark-theme", True)
+        style_manager = Adw.StyleManager.get_default()
+        style_manager.props.color_scheme = Adw.ColorScheme.FORCE_DARK
         
-
 class EasyTermLib:
     def __init__(
         self, 
@@ -178,10 +160,7 @@ class EasyTermLib:
         *args, **kwds
     ):
         self.window = MainWindow(cwd, command, env, actions, dark_theme, palette)
-        self.window.show_all()
-        self.window.connect("delete-event", Gtk.main_quit)
-        Gtk.main()
-        sys.exit()
+        self.window.present()
 
 class EasyTerm(Gtk.Application):
     def __init__(
@@ -189,13 +168,11 @@ class EasyTerm(Gtk.Application):
         cwd:str="", 
         command:list=[],
         env:list=[],
-        actions:list=[], 
-        *args, **kwds
+        actions:list=[]
     ):
         super().__init__(
             application_id='com.usebottles.easyterm',
             flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE | Gio.ApplicationFlags.NON_UNIQUE,
-            *args, **kwds
         )
         self.cwd = cwd
         self.command = command
@@ -253,7 +230,29 @@ class EasyTerm(Gtk.Application):
             "Set the palette (RGBA_back, RGBA_fore)",
             None
         )
-
+            
+    def do_activate(
+        self, 
+        cwd:str="", 
+        command:list=[], 
+        env:list=[], 
+        actions:list=[], 
+        dark_theme:bool=True, 
+        palette:list=[],
+        **kwargs
+    ):
+        win = self.props.active_window
+        if not win:
+            win = MainWindow(
+                application=self,
+                cwd=cwd,
+                command=command,
+                env=env,
+                actions=actions,
+                dark_theme=dark_theme,
+                palette=palette
+            )
+        win.present()
     
     def do_command_line(self, command_line):
         cwd = ""
@@ -290,23 +289,27 @@ class EasyTerm(Gtk.Application):
                 fore = Gdk.RGBA()
                 fore.parse(palette[1])
                 palette = [back, fore]
-
-        EasyTermLib(cwd, command, env, actions, dark_theme, palette)
+                
+        self.do_activate(cwd, command, env, actions, dark_theme, palette)
         return 0
-            
-    def do_activate(self):
-        win = MainWindow(
-            cwd=self.cwd,
-            command=self.command,
-            env=self.env,
-            actions=self.actions
-        )
-        win.connect('delete-event', Gtk.main_quit)
-        win.present()
     
     def do_startup(self):
         Gtk.Application.do_startup(self)
 
+
+class TemplateApp(Gtk.Application):
+
+    def __init__(self):
+        super().__init__(
+            application_id='org.example.myapp',
+            flags=Gio.ApplicationFlags.FLAGS_NONE
+        )
+
+    def do_activate(self):
+        win = self.props.active_window
+        if not win:
+            win = MainWindow(application=self)
+        win.present()    
 
 if __name__ == "__main__":
     app = EasyTerm()
