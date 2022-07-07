@@ -65,15 +65,17 @@ class Terminal(Vte.Terminal):
         self.run_command(cmd)
 
 
-class HeaderBar(Adw.HeaderBar):
+class HeaderBar(Adw.Bin):
     actions_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
     label_title = Gtk.Label.new(CONF_NAME)
 
     def __init__(self, terminal, *args, **kwds):
-        super(HeaderBar, self).__init__(*args, **kwds)
-        self.set_title_widget(self.label_title)
-        self.pack_start(self.actions_box)
+        super(Adw.Bin, self).__init__(*args, **kwds)
         self.terminal = terminal
+        headerbar = Adw.HeaderBar()
+        headerbar.set_title_widget(self.label_title)
+        headerbar.pack_start(self.actions_box)
+        self.set_child(headerbar)
     
     def set_title(self, title):
         self.label_title.set_text(title)
