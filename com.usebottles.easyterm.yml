@@ -1,8 +1,8 @@
 id: com.usebottles.easyterm
 sdk: org.gnome.Sdk
-runtime: org.gnome.Platform
 base: org.winehq.Wine
 base-version: stable-21.08
+runtime: org.gnome.Platform
 runtime-version: "42"
 command: easyterm.py
 
@@ -42,8 +42,9 @@ modules:
           - -Ddocs=false
           - -Dvapi=false
           - -Dgtk4=true
+          - -Dgtk3=false
         sources:
           - type: git
             url: https://gitlab.gnome.org/GNOME/vte.git
-            commit: b51feeca889d4b597e95b21bc77dc078892af11d
+            commit: 3ed53bfaa7344ce5b7727a60a2d33315b15201e5
 
