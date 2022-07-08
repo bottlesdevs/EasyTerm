@@ -51,7 +51,7 @@ class Terminal(Vte.Terminal):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         bc = Gtk.Button()
         bp = Gtk.Button()
-        popover = Gtk.Popover()
+        self.popover = Gtk.Popover()
         rectangle = Gdk.Rectangle()
 
         box.set_margin_top(6)
@@ -62,8 +62,6 @@ class Terminal(Vte.Terminal):
 
         rectangle.x = int(x)
         rectangle.y = int(y)
-
-        popover.add_css_class("menu")
 
         bc.set_label("Copy")
         bp.set_label("Paste")
@@ -76,16 +74,22 @@ class Terminal(Vte.Terminal):
         box.append(bc)
         box.append(bp)
 
-        popover.set_child(box)
-        popover.set_parent(self)
-        popover.set_pointing_to(rectangle)
-        popover.popup()
+        self.popover.add_css_class("menu")
+        self.popover.set_child(box)
+        self.popover.set_parent(self)
+        self.popover.set_pointing_to(rectangle)
+        self.popover.popup()
 
     def copy_cb(self, widget):
-        self.copy_clipboard_format(Vte.Format.TEXT)
+        if self.get_has_selection():
+            clipboard = Gdk.Display.get_clipboard(Gdk.Display.get_default())
+            clipboard.set_content(Gdk.ContentProvider.new_for_value(self.get_text_selected()))
+        self.popover.popdown()
 
     def paste_cb(self, widget):
-        self.paste_clipboard()
+        clipboard = Gdk.Display.get_clipboard(Gdk.Display.get_default())
+        self.paste_text(clipboard.get_content().get_value())
+        self.popover.popdown()
     
     def run_command(self, cmd):
         _cmd = str.encode(f"{cmd}\n")
