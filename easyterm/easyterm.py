@@ -75,6 +75,7 @@ class HeaderBar(Adw.Bin):
         headerbar = Adw.HeaderBar()
         headerbar.set_title_widget(self.label_title)
         headerbar.pack_start(self.actions_box)
+        headerbar.add_css_class("flat")
         self.set_child(headerbar)
     
     def set_title(self, title):
@@ -125,6 +126,8 @@ class MainWindow(Adw.ApplicationWindow):
             cwd = CONF_DEF_CWD
         if command == []:
             command = CONF_DEF_CMD
+        if palette:
+            self.set_palette(palette)
 
         self.terminal.spawn_async(
             Vte.PtyFlags.DEFAULT,
@@ -143,6 +146,15 @@ class MainWindow(Adw.ApplicationWindow):
         self.terminal.connect("window-title-changed", self.update_title)
         self.terminal.connect("child-exited", self.update_title)
 
+    def set_palette(self, palette):
+        _, b = palette
+        style = "window{background-color: %s}" % b.to_string()
+        css_provider = Gtk.CssProvider()
+        css_provider.load_from_data(str.encode(style))
+        Gtk.StyleContext.add_provider_for_display(
+            Gdk.Display.get_default(), css_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
     def update_title(self, terminal, *args):
         self.headerbar.set_title(terminal.get_window_title())
 
