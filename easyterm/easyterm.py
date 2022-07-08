@@ -18,8 +18,7 @@ CONF_FG = Gdk.RGBA(); CONF_FG.red = 0.8; CONF_FG.green = 0.8; CONF_FG.blue = 0.8
 CONF_BG = Gdk.RGBA(); CONF_BG.red = 0.1; CONF_BG.green = 0.1; CONF_BG.blue = 0.1; CONF_BG.alpha = 1.0
 
 class Terminal(Vte.Terminal):
-    evc = Gtk.GestureClick.new()
-    popup_menu = Gtk.PopoverMenu()
+    evc = Gtk.GestureClick(button=Gdk.BUTTON_SECONDARY)
 
     def __init__(self, palette=None, *args, **kwds):
         super(Terminal, self).__init__(*args, **kwds)  
@@ -44,12 +43,43 @@ class Terminal(Vte.Terminal):
         # paste_item = Gtk.MenuItem("Paste")
 
         # signals
-        # self.evc.connect("pressed", self.show_menu_cb)
+        self.evc.connect("pressed", self.show_menu_cb)
         # copy_item.connect("activate", self.copy_cb)
         # paste_item.connect("activate", self.paste_cb)
 
     def show_menu_cb(self, ctl, n_press, x, y):
-        self.popup_menu.popup()
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        bc = Gtk.Button()
+        bp = Gtk.Button()
+        popover = Gtk.Popover()
+        rectangle = Gdk.Rectangle()
+
+        box.set_margin_top(6)
+        box.set_margin_start(6)
+        box.set_margin_bottom(6)
+        box.set_margin_end(6)
+        box.set_spacing(3)
+
+        rectangle.x = int(x)
+        rectangle.y = int(y)
+
+        popover.add_css_class("menu")
+
+        bc.set_label("Copy")
+        bp.set_label("Paste")
+        bc.add_css_class("flat")
+        bp.add_css_class("flat")
+
+        bc.connect("clicked", self.copy_cb)
+        bp.connect("clicked", self.paste_cb)
+
+        box.append(bc)
+        box.append(bp)
+
+        popover.set_child(box)
+        popover.set_parent(self)
+        popover.set_pointing_to(rectangle)
+        popover.popup()
 
     def copy_cb(self, widget):
         self.copy_clipboard_format(Vte.Format.TEXT)
@@ -75,7 +105,6 @@ class HeaderBar(Adw.Bin):
         headerbar = Adw.HeaderBar()
         headerbar.set_title_widget(self.label_title)
         headerbar.pack_start(self.actions_box)
-        headerbar.add_css_class("flat")
         self.set_child(headerbar)
     
     def set_title(self, title):
@@ -142,7 +171,6 @@ class MainWindow(Adw.ApplicationWindow):
             None
         )
         
-        # self.terminal.evc.connect("key-pressed", self.update_title)
         self.terminal.connect("window-title-changed", self.update_title)
         self.terminal.connect("child-exited", self.update_title)
 
