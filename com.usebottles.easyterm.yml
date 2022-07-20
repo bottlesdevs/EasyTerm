@@ -1,0 +1,50 @@
+id: com.usebottles.easyterm
+sdk: org.gnome.Sdk
+base: org.winehq.Wine
+base-version: stable-21.08
+runtime: org.gnome.Platform
+runtime-version: "42"
+command: easyterm.py
+
+finish-args:
+  - --allow=devel
+  - --allow=multiarch
+  - --share=network
+  - --share=ipc
+  - --socket=x11
+  - --socket=wayland
+  - --socket=pulseaudio
+  - --device=all
+  - --require-version=1.1.2
+
+add-extensions:
+  org.gnome.Platform.Compat.i386:
+    directory: lib/i386-linux-gnu
+    version: "42"
+
+  org.gnome.Platform.Compat.i386.Debug:
+    directory: lib/debug/lib/i386-linux-gnu
+    version: "42"
+    no-autodownload: true
+
+modules:
+  - name: EasyTerm
+    buildsystem: simple
+    build-commands:
+      - python3 setup.py install --prefix=/app --root=/
+    sources:
+      - type: dir
+        path: .
+    modules:
+      - name: vte
+        buildsystem: meson
+        config-opts:
+          - -Ddocs=false
+          - -Dvapi=false
+          - -Dgtk4=true
+          - -Dgtk3=false
+        sources:
+          - type: git
+            url: https://gitlab.gnome.org/GNOME/vte.git
+            commit: 3ed53bfaa7344ce5b7727a60a2d33315b15201e5
+
