@@ -1,19 +1,14 @@
 # EasyTerm
-An easy-to-bundle GTK terminal emulator.
+An easy-to-bundle GTK 4 + libadwaita + vte terminal emulator.
 
 This project is meant to be used as a dependency for other projects that
 need an easy-to-bundle and lightweight terminal emulator, but also
 works as a standalone terminal emulator.
 
 ## Dependencies
-- GTK 3
-- Handy
+- GTK 4
+- libadwaita
 - Vte
-
-## GTK4 & libadwaita
-Port to GTK4 is almost simple, but is stalled because of the lack of
-Vte for GTK4. This mean that also libhandy cannot be moved to libadwaita
-because this last one need GTK4.
 
 ## Bottles purposes
 EasyTerm should be provided as the default terminal in the Bottles project
